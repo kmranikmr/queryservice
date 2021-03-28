@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  dataanalyticsplatform.queryservice:
+    image: dataanalyticsplatformqueryservice
+    build:
+      context: .
+      dockerfile: Dockerfile
