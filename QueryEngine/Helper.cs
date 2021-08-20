@@ -247,6 +247,7 @@ namespace QueryEngine
                  
                 if ( response != null)
                 {
+                    Console.WriteLine("have response");
                     Console.WriteLine(response.Content);
                     string[] tables = JsonConvert.DeserializeObject<string[]>(response.Content);
 
