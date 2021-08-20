@@ -64,6 +64,7 @@ namespace QueryService.Model
     {
         public string query { get; set; }
         public int projectId { get; set; }
+        public int schemaId { get; set; }
     }
   
 }
