@@ -107,7 +107,7 @@ namespace DataAnalyticsPlatform.QueryService.Controllers
             int userId = Convert.ToInt32(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (queryData.projectId != 0)
             {
-                QueryRequest request = new QueryRequest { QueryString = queryData.query , ProjectId = queryData.projectId};
+                QueryRequest request = new QueryRequest { QueryString = queryData.query , ProjectId = queryData.projectId, SchemaVersionId = queryData.schemaId};
                 request.isWorkflow = isWorkflow;
                 var requestChanged = await QueryEngine.Helper.GetMappedTableName(request, authorization, userId,esNativeSearch.dataServiceServer);
                 return requestChanged;
