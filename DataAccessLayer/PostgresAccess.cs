@@ -13,7 +13,7 @@ namespace DataAccess
         {
             _connectionString = connString;
         }
-        public string GetSql(string sql, string filter, string offset, string pageSize, bool forward, string PageFilterType)
+/*        public string GetSql(string sql, string filter, string offset, string pageSize, bool forward, string PageFilterType)
         {
             string stmt = sql;
             string quotes = string.Empty;
@@ -136,6 +136,189 @@ namespace DataAccess
             Console.WriteLine(" pos 3 " + stmt);
             return stmt;
         }
+*/
+                public string GetSql(string sql, string filter, string offset, string pageSize, bool forward, string PageFilterType)
+        {
+            string stmt = sql;
+            string quotes = string.Empty;
+            if ( string.IsNullOrEmpty(offset) )
+            {
+                offset = "0";
+            }
+            string[] joinkeywords = { "inner", "join", "outer", "left", "right" };
+            if (!string.IsNullOrEmpty(PageFilterType) && PageFilterType.ToLower() == "string")
+                quotes = "'";
+            bool hasRowInformation = false;
+            //if (forward)
+            {
+                stmt = "select * from "+ "(" + stmt + ")A ";
+                Console.WriteLine(" pos 1 " + stmt);
+                // if (sql.ToLower().Contains("where"))
+                //  {
+                //     stmt += " and " + filter + " > " +  offset +  " order by " + filter + " " + " limit " + pageSize;
+                //  }
+                // else
+                if (sql.Contains("join"))
+                {
+                    stmt = "";
+                    string[] tok = sql.Split(" ");
+                    int pos = 0;
+                    string tablename = "";
+                    string aliasPresent = "";
+                    bool SelectAll = false;
+                    
+                    foreach ( string str in tok)
+                    {
+                        if (str.ToLower().Trim() == "*")
+                        {
+                            SelectAll = true;
+                        }
+                        if ((tablename == "") && ( SelectAll || str.Contains("rowid") ) )
+                        {
+                            hasRowInformation = true;
+                        }
+                        if ( str.ToLower().Trim() == "from" )
+                        {
+                            tablename = tok[pos + 1];
+                            if (tok[pos + 2].ToLower() == "as")
+                            {
+                                aliasPresent = tok[pos + 3].ToLower();
+                            }
+                            else
+                            {
+                                aliasPresent = tok[pos + 2].ToLower();
+                                if (aliasPresent.Contains("(") || aliasPresent.Contains("select"))
+                                {
+                                    aliasPresent = "";//hack;;
+                                }
+                            }
+                            break;
+                        }
+                        pos++;
+                    }
+                    if (forward)
+                    {
+                        if (SelectAll)//select all
+                        {
+                            bool isKeyword = joinkeywords.Any(x => x == aliasPresent);
+                            if (isKeyword && filter == "rowid")
+                            {
+                                sql = sql.Replace("*", $"*, {tablename}.rowid AS rowid1 ");
+                                stmt = "select * from " + "(" + sql + ")A ";
+                                stmt = stmt + " where " + "rowid1 " + " > " + offset + " order by rowid1" + " limit " + pageSize;
+                                Console.WriteLine(" pos key " + stmt);
+                            }
+                            else if (!isKeyword && filter == "rowid")
+                            {
+                                sql = sql.Replace("*", $"*, {aliasPresent}.rowid AS rowid1 ");
+                                stmt = "select * from " + "(" + sql + ")A ";
+                                stmt = stmt + " where " + "rowid1 " + " > " + offset + " order by rowid1" + " limit " + pageSize;
+                                Console.WriteLine(" pos not key " + stmt);
+                            }
+                        }
+                        else//let's assume only one rowid will be present
+                        {
+                            if (hasRowInformation)
+                            {
+                                if (stmt == "")
+                                {
+                                    stmt = "select * from " + "(" + sql + ")A ";
+                                }
+                                stmt += " where " + filter + " > " + offset + " order by " + filter + " " + " limit " + pageSize;
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (SelectAll)//select all
+                        {
+                            bool isKeyword = joinkeywords.Any(x => x == aliasPresent);
+                            if (isKeyword && filter == "rowid")
+                            {
+                                sql = sql.Replace("*", $"*, {tablename}.rowid AS rowid1 ");
+                                stmt = "select * from " + "(" + sql + ")A ";
+                                int.TryParse(offset, out int offsetInt);
+                                int.TryParse(pageSize, out int pageSizeInt);
+                                stmt = stmt + " where " + "rowid1 " + " <= " + offset + " and rowid1 >=  " + (offsetInt - pageSizeInt).ToString() + " order by rowid1" + " limit " + pageSize;
+                                Console.WriteLine(" pos key " + stmt);
+                            }
+                            else if (!isKeyword && filter == "rowid")
+                            {
+                                sql = sql.Replace("*", $"*, {aliasPresent}.rowid AS rowid1 ");
+                                stmt = "select * from " + "(" + sql + ")A ";
+                                int.TryParse(offset, out int offsetInt);
+                                int.TryParse(pageSize, out int pageSizeInt);
+                                stmt = stmt + " where " + "rowid1 " + " <= " + offset + " and rowid1 >=  " + (offsetInt - pageSizeInt).ToString() + " order by rowid1" + " limit " + pageSize;
+                                Console.WriteLine(" pos not key " + stmt);
+                            }
+                        }
+                        else//let's assume only one rowid will be present
+                        {
+                            if (hasRowInformation)
+                            {
+                                if (stmt == "")
+                                {
+                                    stmt = "select * from " + "(" + sql + ")A ";
+                                }
+                                int.TryParse(offset, out int offsetInt);
+                                int.TryParse(pageSize, out int pageSizeInt);
+                                stmt += " where " + filter + " <= " + offset + " and " + filter + " >=  " + (offsetInt - pageSizeInt).ToString() + " order by " + filter + " " + " limit " + pageSize;
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (forward)
+                    {
+                        if (sql.Contains("*") || sql.Contains("rowid"))
+                        {
+
+                            stmt += " where " + filter + " > " + offset + " order by " + filter + " " + " limit " + pageSize;
+                            Console.WriteLine(" pos 2 " + stmt);
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                    else
+                    {
+                        if (sql.Contains("*") || sql.Contains("rowid"))
+                        {
+                            int.TryParse(offset, out int offsetInt);
+                            int.TryParse(pageSize, out int pageSizeInt);
+                            stmt += " where " + filter + " <= " + offset + " and " + filter + " >=  " + (offsetInt - pageSizeInt).ToString() + " order by " + filter + " " + " limit " + pageSize;
+                            Console.WriteLine(" pos 2 " + stmt);
+                        }
+                    }
+                }
+
+            }
+            
+            //else
+            //{
+            //   // if (sql.ToLower().Contains("where"))
+            //   // {
+            //   //     stmt += " and " + filter + " <= " +  offset +  " order by " + filter + " " + " limit " + pageSize;
+            //   // }
+            //   /// else
+            //    {
+            //        stmt += " where " + filter + " <= " +  offset +  " order by " + filter + " " + " limit " + pageSize;
+
+            //    }
+            //}
+            Console.WriteLine(" pos 3 " + stmt);
+            return stmt;
+        }
         public string GetDataTypeFromPostGres(Type FieldType)
         {
             if (FieldType == typeof(string))
@@ -171,28 +354,35 @@ namespace DataAccess
                             if (dataList.Count == 0)
                             {
                                 List<string> columns = new List<string>();
-                                for (int i = 0; i < reader.FieldCount; i++)
-                                {
-                                    string field = reader.GetName(i);
-                                    Type fieldType = reader.GetFieldType(i);
-                                    if (fields.Contains(field))
-                                    {
-                                        HeaderList.Add(new HeaderData { Header = field, DataType = GetDataTypeFromPostGres(fieldType)});
-                                        filterIndex.Add(i);
-                                    }
+                                
 
+                                for (int j = 0; j < fields.Count; j++)
+                                {
+                                    for (int i = 0; i < reader.FieldCount; i++)
+                                    {
+                                        string field = reader.GetName(i);
+                                        Type fieldType = reader.GetFieldType(i);
+                                        if (fields[j].Contains(field))
+                                        {
+                                            HeaderList.Add(new HeaderData { Header = field, DataType = GetDataTypeFromPostGres(fieldType) });
+                                            filterIndex.Add(i);
+                                        }
+
+                                    }
                                 }
                                 //dataList.Add(columns);
                             }
 
                             var l = new List<string>();
-                            for (int i = 0; i < reader.FieldCount; i++)
+                            //for (int i = 0; i < reader.FieldCount; i++)
+                            for ( int j = 0; j < filterIndex.Count; j++)
                             {
-                                if (filterIndex.Contains(i))
+                                if (filterIndex[j] < reader.FieldCount)
                                 {
-                                    var v = Convert.ToString(reader.GetValue(i));
+                                    var v = Convert.ToString(reader.GetValue(filterIndex[j]));
                                     l.Add(v);
                                 }
+                                
                             }
                             dataList.Add(l);
                             
