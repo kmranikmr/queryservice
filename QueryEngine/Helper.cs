@@ -84,7 +84,7 @@ namespace QueryEngine
             {
                 if (getTable)
                 {
-                    if (toks[i] != " ")
+                    if (toks[i] != " " && toks[i] != "")
                     {
                         Console.WriteLine(toks[i]);
                         tableNames.Add(toks[i]);
@@ -201,7 +201,8 @@ namespace QueryEngine
                         if (!replacement.Contains("_"))
                         {
                             string replace = "";
-                            if (queryRequest.SearchDestination == DestinationType.ElasticSearch)
+                            if (queryRequest.SearchDestination == DestinationType.ElasticSearch ||
+                                queryRequest.SearchDestination == DestinationType.Mongo)
                             {
 
                                 replace = Regex.Replace(queryRequest.QueryString, replacement, replacement + "_" + queryRequest.ProjectId + "_" + userId);
