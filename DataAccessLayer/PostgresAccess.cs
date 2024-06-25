@@ -282,7 +282,7 @@ namespace DataAccess
                         if (sql.Contains("*") || sql.Contains("rowid"))
                         {
 
-                            stmt += " where " + filter + " > " + offset + " order by " + filter + " " + " limit " + pageSize;
+                            stmt += " where " + filter + " >= " + offset + " order by " + filter + " " + " limit " + pageSize;
                             Console.WriteLine(" pos 2 " + stmt);
                         }
                         else

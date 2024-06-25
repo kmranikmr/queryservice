@@ -81,7 +81,7 @@ namespace DataAccess
                 foreach (var keyValuePair in hit.Source)
                 {
 
-                    inner.Add(((JProperty)keyValuePair).Name + ":" + ((JProperty)keyValuePair).Value);
+                    inner.Add(((JProperty)keyValuePair).Value.ToString());
                     if (searchResult.Count == 0)
                     {
 

@@ -1,10 +1,10 @@
-FROM microsoft/dotnet:2.2-aspnetcore-runtime AS base
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.2-stretch-slim AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 EXPOSE 6004
 
-FROM microsoft/dotnet:2.2-sdk AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS build
 COPY *.sln ./
 COPY DataAnalyticsPlatform.QueryService/QueryServiceApi.csproj DataAnalyticsPlatform.QueryService/QueryServiceApi.csproj
 COPY DataAccessLayer/DataAccessLayer.csproj DataAccessLayer/DataAccessLayer.csproj

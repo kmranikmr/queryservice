@@ -19,11 +19,13 @@ namespace QueryEngine
         private SearchResult<T> CurrentPage;
         private string ConnectionString;
         public string dataServiceServer;
-        public ESNativeSearch(string connectionstring, string digdagConnectionString, string elastic, string dataservice)
+         public MongoAccess<List<List<string>>> mongoAccess;
+        public ESNativeSearch(string connectionstring, string digdagConnectionString, string elastic, string dataservice, string mongoConnection)
         {
             esAccess = new ElasticAccess<List<List<string>>>(elastic);
             postgresAccess = new PostgresAccess<List<List<string>>>(connectionstring);
             postgresDigdagAccess = new PostgresAccess<List<List<string>>>(digdagConnectionString);
+            mongoAccess = new MongoAccess<List<List<string>>>(mongoConnection);
             ConnectionString = connectionstring;
             dataServiceServer = dataservice;
         }
@@ -44,6 +46,10 @@ namespace QueryEngine
         {
             return await Task.Factory.StartNew<SearchResult<T>>(() => Search(query, page, pageSize));
         }
+          public async Task<SearchResult<T>> SearchMongoAsync(string query, int page, int pageSize, string indexName)
+        {
+            return await Task.Factory.StartNew<SearchResult<T>>(() => SearchMongo(query, page, pageSize, indexName));
+        }
         public async Task<SearchResult<T>> SearchComplete(string query, List<string>fields, int limit, bool useDigdag = false)//SearchResult<T> PreviousPage, SearchResult<T> NextPage, SearchResult<List<List<string>>> CurrentPage)
         {
             //T result = (T)(object)postgresAccess.LoadAllSQL(query, fields);// pageFilter, page.ToString(), pageSize.ToString(), ref next, ref prev, forward);
@@ -62,7 +68,8 @@ namespace QueryEngine
             {
 
                 Results = (T)(object)retDat,
-                Header = HeaderList
+                Header = HeaderList,
+                 Header2 = HeaderList.Select(x => x.Header).ToList()
             };
         }
         public async Task<SearchResult<T>> SearchComplete2(string query, List<string> fields, int limit, bool useDigDag = false)//SearchResult<T> PreviousPage, SearchResult<T> NextPage, SearchResult<List<List<string>>> CurrentPage)
@@ -128,7 +135,7 @@ namespace QueryEngine
                         //set current page to previous..and get new previous page
                         NextPage = CurrentPage;
                         CurrentPage = PreviousPage;
-                        pageOffset = CurrentPage.NextStart;
+                        pageOffset = CurrentPage.PreviousStart;
                         return CurrentPage;
                     }
 
@@ -229,6 +236,20 @@ namespace QueryEngine
                 Header = HeaderList,
                 Header2 = HeaderList.Select(x => x.Header).ToList()
         };
+        }
+
+         public SearchResult<T> SearchMongo(string query, int page, int pageSize, string indexName = "")
+        {
+            List<HeaderData> HeaderList = new List<HeaderData>();
+            T result = (T)(object)mongoAccess.PostQuery(query, page, pageSize, indexName, ref HeaderList);
+            if (result == null) return null;
+            return new SearchResult<T>
+            {
+
+                Results = (T)result,
+                //  Header = HeaderList,
+                Header2 = HeaderList.Select(x => x.Header).ToList()
+            };
         }
 
         public SearchResult<T> Search(string query, int page, int pageSize)

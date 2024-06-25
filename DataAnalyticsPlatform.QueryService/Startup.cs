@@ -33,6 +33,7 @@ namespace DataAnalyticsPlatform.QueryService
             var digdagPostgresConnectionString = Configuration.GetConnectionString("digdagdb");
             var elasticConnectionString = Configuration.GetConnectionString("elastic");
             var dataService = Configuration.GetConnectionString("dataservice");//var dataService = Configuration.GetConnectionString("dataservice");
+            var mongoConnection = Configuration.GetConnectionString("mongodb");
             //    services.ConfigureAuth(Configuration);
             // services.Configure<ConnectionStringsConfig>(option => option.PostgresConnection = postgresConnectionString);
             services.AddCors(options =>
@@ -44,7 +45,7 @@ namespace DataAnalyticsPlatform.QueryService
                     .AllowAnyHeader()
                     .AllowCredentials());
             });
-            services.AddQueryServices(postgresConnectionString, digdagPostgresConnectionString, elasticConnectionString, dataService);
+            services.AddQueryServices(postgresConnectionString, digdagPostgresConnectionString, elasticConnectionString, dataService, mongoConnection);
             
 
         }

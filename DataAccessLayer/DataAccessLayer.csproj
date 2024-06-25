@@ -8,6 +8,7 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.4" />
     <PackageReference Include="NEST" Version="7.9.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.15.0" />
     <PackageReference Include="NEST.JsonNetSerializer" Version="6.7.0" />
     <PackageReference Include="Npgsql" Version="4.0.6" />
     <PackageReference Include="SqlKata" Version="1.1.7" />

@@ -35,6 +35,7 @@ namespace QueryService.Model
         public bool isWorkflow { get; set; }
         public string SchemaName { get; set; }
         public string ModelName { get; set; }
+        public bool isPreview {get;set;}
     }
 
 

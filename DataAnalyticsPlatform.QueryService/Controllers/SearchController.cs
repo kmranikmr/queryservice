@@ -138,6 +138,7 @@ namespace DataAnalyticsPlatform.QueryService.Controllers
             int userId = Convert.ToInt32(this.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if ( request.ProjectId != 0 )
             {
+               if(!request.isPreview) {
                 request.QueryString = await QueryEngine.Helper.GetMappedTableName(request, authorization, userId, esNativeSearch.dataServiceServer);
              /*   int startIndex = request.QueryString.ToLower().IndexOf("schema");
                 List<int> sb = new List<int>();
@@ -233,7 +234,7 @@ namespace DataAnalyticsPlatform.QueryService.Controllers
                     //}
                     Console.WriteLine("Query " + request.QueryString);
                 }
-                
+                }
             }
             //we need to check if project is good for this user
             if ( request.SearchDestination == DestinationType.RDBMS)
@@ -289,6 +290,14 @@ namespace DataAnalyticsPlatform.QueryService.Controllers
 
                 result = await esNativeSearch.SearchAsync(queryEs, request.PageIndex, request.PageSize, indexName);
             }
+            else if (request.SearchDestination == DestinationType.Mongo)
+            {
+                string indexName = QueryEngine.Helper.GetMappedTableName(request.SchemaName, request, authorization, userId);
+                indexName = indexName.Replace(".", "");
+                result = await esNativeSearch.SearchMongoAsync(request.QueryString, request.PageIndex, request.PageSize, indexName);
+            }            
+
+
             //var result = await esNativeSearch.SearchAsync(request.QueryString, request.PageIndex, request.PageSize);
            
             return result;
